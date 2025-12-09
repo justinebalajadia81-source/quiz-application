@@ -1,0 +1,690 @@
+
+<DOCTYPE html>  
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Application</title>
+    <style>
+        /* CSS for styling */
+        /* Page Background: Subtle light gray */
+        body {
+            font-family: Arial, Helvetica, sans-serif; /* Clean, modern system-default sans-serif */
+            margin: 0;
+            padding: 0;
+            background: #F7F7F7; /* Light gray background */
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            flex-direction: column;
+        }
+
+        /* Main Container: White, centered, with soft shadow */
+        .container {
+            background: #FFFFFF; /* White background */
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Soft drop shadow */
+            border-radius: 5px;
+            padding: 30px;
+            width: 100%;
+            max-width: 800px; /* Increased width for question table */
+            text-align: center;
+        }
+
+        h1, h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        /* Tabs for Login and Register */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 10px;
+            cursor: pointer;
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-bottom: none;
+        }
+
+        .tab.active {
+            background: #fff;
+            border-bottom: 1px solid #fff;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        label {
+            font-weight: bold;
+            text-align: left;
+        }
+
+        input {
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            font-size: 16px;
+        }
+
+        input:focus {
+            border-color: #00BFFF; /* Light blue/cyan border on focus */
+            outline: none;
+        }
+
+        button {
+            padding: 12px;
+            background: #000; /* Solid, dark professional color */
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 3px;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #333;
+        }
+        
+        .delete-btn {
+            padding: 8px 12px;
+            background: #dc3545; /* Red color for Delete */
+            margin-left: 5px; /* Added spacing for Edit/Delete buttons */
+        }
+        
+        .delete-btn:hover {
+            background: #c82333;
+        }
+
+        .edit-btn {
+            padding: 8px 12px;
+            background: #007bff; /* Blue color for Edit */
+        }
+
+        .edit-btn:hover {
+            background: #0056b3;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .question {
+            margin: 20px 0;
+        }
+
+        .choices {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .choice {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .choice.selected {
+            background: #e0f7fa;
+        }
+
+        .timer {
+            font-size: 18px;
+            margin: 20px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        th {
+            background: #f4f4f4;
+        }
+        
+        /* Adjusted width for the 'Action' column to fit two buttons (Edit/Delete) */
+        #quiz-questions-table td:nth-child(5) {
+            text-align: center;
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="main-menu">
+            <h1>Quiz Application</h1>
+            <div class="nav-buttons">
+                <button id="admin-btn">Admin Login</button>
+                <button id="student-btn">Student Portal</button>
+            </div>
+        </div>
+
+        <div id="login-section" class="hidden">
+            <form id="login-form">
+                <label for="username">Username</label>
+                <input type="text" id="username" placeholder="Username" required>
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="Password" required>
+                <button type="submit">Sign In</button>
+            </form>
+            <button id="back-to-main">Back to Main</button>
+        </div>
+
+        <div id="admin-dashboard" class="hidden">
+            <h1>Admin Dashboard</h1>
+            <button id="logout-btn">Logout</button>
+            
+            <hr>
+            
+            <h2>➕ <span id="form-title">Add New Question</span></h2>
+            <form id="create-quiz-form">
+                <input type="text" id="question" placeholder="Question" required>
+                <input type="text" id="choice1" placeholder="Choice 1" required>
+                <input type="text" id="choice2" placeholder="Choice 2" required>
+                <input type="text" id="choice3" placeholder="Choice 3" required>
+                <input type="text" id="choice4" placeholder="Choice 4" required>
+                <select id="correct-answer" required>
+                    <option value="">Select Correct Answer</option>
+                    <option value="0">Choice 1</option>
+                    <option value="1">Choice 2</option>
+                    <option value="2">Choice 3</option>
+                    <option value="3">Choice 4</option>
+                </select>
+                <div style="display: flex; gap: 10px;">
+                    <button type="submit" id="main-form-btn" style="flex: 2;">Add Question</button>
+                    <button type="button" id="cancel-edit-btn" class="hidden" style="flex: 1; background: #6c757d;">Cancel Edit</button>
+                </div>
+            </form>
+            
+            <hr>
+            
+            <h2>📋 Manage Quiz Questions</h2>
+            <table id="quiz-questions-table">
+                <thead>
+                    <tr>
+                        <th style="width: 5%;">#</th>
+                        <th style="width: 45%;">Question</th>
+                        <th style="width: 25%;">Correct Answer</th>
+                        <th style="width: 25%;">Action</th> </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            
+            <hr>
+
+            <h2>🏆 Student Results Board</h2>
+            <table id="student-records">
+                <thead>
+                    <tr>
+                        <th>Student Name</th>
+                        <th>Score</th>
+                        <th>Duration</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <div id="student-portal" class="hidden">
+            <h1>Student Portal</h1>
+            <div class="tabs">
+                <div class="tab active" id="login-tab">Login</div>
+                <div class="tab" id="register-tab">Register</div>
+            </div>
+            <div id="student-login-form">
+                <form id="stu-login-form">
+                    <label for="stu-username">Username</label>
+                    <input type="text" id="stu-username" placeholder="Username" required>
+                    <label for="stu-password">Password</label>
+                    <input type="password" id="stu-password" placeholder="Password" required>
+                    <button type="submit">Login</button>
+                </form>
+            </div>
+            <div id="student-register-form" class="hidden">
+                <form id="stu-register-form">
+                    <label for="reg-name">Full Name</label>
+                    <input type="text" id="reg-name" placeholder="Full Name" required>
+                    <label for="reg-username">Username</label>
+                    <input type="text" id="reg-username" placeholder="Username" required>
+                    <label for="reg-password">Password</label>
+                    <input type="password" id="reg-password" placeholder="Password" required>
+                    <button type="submit">Register</button>
+                </form>
+            </div>
+            <button id="back-to-main-student">Back to Main</button>
+        </div>
+
+        <div id="quiz-section" class="hidden">
+            <div class="timer">Time: <span id="timer-display">00:00</span></div>
+            <div id="question-display"></div>
+            <div class="choices" id="choices-display"></div>
+            <button id="next-btn" class="hidden">Next</button>
+            <button id="submit-btn" class="hidden">Submit Quiz</button>
+        </div>
+
+        <div id="result-section" class="hidden">
+            <h1>Quiz Result</h1>
+            <p id="result-text"></p>
+            <button id="back-to-portal-result">Back to Portal</button>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript for logic
+        // Elements
+        const mainMenu = document.getElementById('main-menu');
+        const loginSection = document.getElementById('login-section');
+        const adminDashboard = document.getElementById('admin-dashboard');
+        const studentPortal = document.getElementById('student-portal');
+        const quizSection = document.getElementById('quiz-section');
+        const resultSection = document.getElementById('result-section');
+
+        const loginForm = document.getElementById('login-form');
+        const createQuizForm = document.getElementById('create-quiz-form');
+        const stuLoginForm = document.getElementById('stu-login-form');
+        const stuRegisterForm = document.getElementById('stu-register-form');
+        const logoutBtn = document.getElementById('logout-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const submitBtn = document.getElementById('submit-btn');
+
+        const adminBtn = document.getElementById('admin-btn');
+        const studentBtn = document.getElementById('student-btn');
+        const backToMain = document.getElementById('back-to-main');
+        const backToMainStudent = document.getElementById('back-to-main-student');
+        const backToPortalResult = document.getElementById('back-to-portal-result');
+        const loginTab = document.getElementById('login-tab');
+        const registerTab = document.getElementById('register-tab');
+        const studentLoginFormDiv = document.getElementById('student-login-form');
+        const studentRegisterFormDiv = document.getElementById('student-register-form');
+
+        const timerDisplay = document.getElementById('timer-display');
+        const questionDisplay = document.getElementById('question-display');
+        const choicesDisplay = document.getElementById('choices-display');
+        const resultText = document.getElementById('result-text');
+        const studentRecordsTable = document.querySelector('#student-records tbody');
+        const quizQuestionsTableBody = document.querySelector('#quiz-questions-table tbody');
+
+        // Form elements for management (newly mapped for update logic)
+        const formTitle = document.getElementById('form-title');
+        const mainFormBtn = document.getElementById('main-form-btn');
+        const cancelEditBtn = document.getElementById('cancel-edit-btn');
+        const questionInput = document.getElementById('question');
+        const choiceInputs = [
+            document.getElementById('choice1'),
+            document.getElementById('choice2'),
+            document.getElementById('choice3'),
+            document.getElementById('choice4')
+        ];
+        const correctAnswerSelect = document.getElementById('correct-answer');
+
+        // Data storage using localStorage
+        let quizQuestions = JSON.parse(localStorage.getItem('quizQuestions')) || [];
+        let studentRecords = JSON.parse(localStorage.getItem('studentRecords')) || [];
+        let studentAccounts = JSON.parse(localStorage.getItem('studentAccounts')) || []; // Array of {name, username, password}
+        let currentStudent = null; // Logged-in student object
+        let currentQuestionIndex = 0;
+        let selectedAnswer = null;
+        let score = 0;
+        let timerInterval;
+        let startTime;
+        let editingQuestionId = null; // New variable to track the ID of the question being edited
+
+        // Utility to show sections
+        function showSection(section) {
+            const allSections = [mainMenu, loginSection, adminDashboard, studentPortal, quizSection, resultSection];
+            allSections.forEach(s => s.classList.add('hidden'));
+            section.classList.remove('hidden');
+        }
+
+        // Navigation event listeners
+        adminBtn.addEventListener('click', () => showSection(loginSection));
+        studentBtn.addEventListener('click', () => showSection(studentPortal));
+        backToMain.addEventListener('click', () => showSection(mainMenu));
+        backToMainStudent.addEventListener('click', () => showSection(mainMenu));
+        backToPortalResult.addEventListener('click', () => showSection(studentPortal));
+
+        // Tab switching in student portal
+        loginTab.addEventListener('click', () => {
+            loginTab.classList.add('active');
+            registerTab.classList.remove('active');
+            studentLoginFormDiv.classList.remove('hidden');
+            studentRegisterFormDiv.classList.add('hidden');
+        });
+        registerTab.addEventListener('click', () => {
+            registerTab.classList.add('active');
+            loginTab.classList.remove('active');
+            studentRegisterFormDiv.classList.remove('hidden');
+            studentLoginFormDiv.classList.add('hidden');
+        });
+
+        // Admin Login
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            // Fixed admin credentials: username 'user', password 'Justine123' (case-sensitive)
+            if (username === 'user' && password === 'Justine123') {
+                showSection(adminDashboard);
+                displayStudentRecords();
+                displayQuizQuestions(); // Display questions upon login
+            } else {
+                alert('Invalid credentials. Please check username and password.');
+            }
+        });
+
+        // Admin Logout
+        logoutBtn.addEventListener('click', () => {
+            showSection(mainMenu);
+        });
+
+        // --- NEW: Reset form logic ---
+        function resetAddForm() {
+            editingQuestionId = null;
+            createQuizForm.reset();
+            formTitle.textContent = 'Add New Question';
+            mainFormBtn.textContent = 'Add Question';
+            cancelEditBtn.classList.add('hidden');
+        }
+
+        cancelEditBtn.addEventListener('click', resetAddForm);
+        // --- END NEW: Reset form logic ---
+
+
+        // --- MODIFIED: Create or Update Quiz Question ---
+        createQuizForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const newQuestion = questionInput.value;
+            const newChoices = [
+                choiceInputs[0].value,
+                choiceInputs[1].value,
+                choiceInputs[2].value,
+                choiceInputs[3].value
+            ];
+            const newCorrect = parseInt(correctAnswerSelect.value);
+
+            // --- Logic for Editing (Update) ---
+            if (editingQuestionId !== null) {
+                const indexToUpdate = quizQuestions.findIndex(q => q.id === editingQuestionId);
+
+                if (indexToUpdate !== -1) {
+                    quizQuestions[indexToUpdate].question = newQuestion;
+                    quizQuestions[indexToUpdate].choices = newChoices;
+                    quizQuestions[indexToUpdate].correct = newCorrect;
+                    
+                    localStorage.setItem('quizQuestions', JSON.stringify(quizQuestions));
+                    alert('Question updated successfully!');
+                    resetAddForm(); // Switch back to 'Add' mode
+                    displayQuizQuestions(); // Refresh the list
+                } else {
+                    alert('Error: Question ID not found for update.');
+                }
+            } 
+            // --- Logic for Creating (Create) ---
+            else {
+                // Generate a simple unique ID for the question (simulating a database ID)
+                const id = Date.now(); 
+                quizQuestions.push({ id, question: newQuestion, choices: newChoices, correct: newCorrect });
+                
+                localStorage.setItem('quizQuestions', JSON.stringify(quizQuestions));
+                alert('Question added successfully!');
+                createQuizForm.reset();
+                displayQuizQuestions(); // Refresh the list
+            }
+        });
+        // --- END MODIFIED: Create or Update Quiz Question ---
+
+        // Function to delete a question
+        window.deleteQuestion = function(questionId) {
+            const confirmed = confirm('Are you sure you want to permanently delete this question? This action cannot be undone.');
+
+            if (confirmed) {
+                const indexToDelete = quizQuestions.findIndex(q => q.id === questionId);
+                
+                if (indexToDelete > -1) {
+                    quizQuestions.splice(indexToDelete, 1);
+                    localStorage.setItem('quizQuestions', JSON.stringify(quizQuestions));
+                    alert('Question deleted successfully!');
+                    displayQuizQuestions(); // Re-render the table
+                } else {
+                    alert('Error: Question not found.');
+                }
+            }
+        }
+        
+        // --- NEW: Function to prepare the form for editing ---
+        window.editQuestion = function(questionId) {
+            const questionToEdit = quizQuestions.find(q => q.id === questionId);
+
+            if (questionToEdit) {
+                // 1. Set global state
+                editingQuestionId = questionId;
+
+                // 2. Populate the form inputs
+                questionInput.value = questionToEdit.question;
+                choiceInputs.forEach((input, index) => {
+                    input.value = questionToEdit.choices[index];
+                });
+                correctAnswerSelect.value = questionToEdit.correct;
+
+                // 3. Change form buttons/title
+                formTitle.textContent = '✏️ Edit Question ID: ' + questionId;
+                mainFormBtn.textContent = 'Save Changes';
+                cancelEditBtn.classList.remove('hidden');
+
+                // Optional: Scroll to the top of the form
+                questionInput.scrollIntoView({ behavior: 'smooth' });
+            } else {
+                alert('Error: Question not found.');
+            }
+        }
+        // --- END NEW: Function to prepare the form for editing ---
+        
+        // --- MODIFIED: Display Quiz Questions (Management View) ---
+        function displayQuizQuestions() {
+            quizQuestionsTableBody.innerHTML = '';
+            
+            if (quizQuestions.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td colspan="4">No questions added yet.</td>`;
+                quizQuestionsTableBody.appendChild(row);
+                return;
+            }
+
+            quizQuestions.forEach((q, index) => {
+                const row = document.createElement('tr');
+                const correctAnswerText = q.correct >= 0 && q.correct < q.choices.length 
+                                        ? q.choices[q.correct] 
+                                        : 'Invalid Index';
+                
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td style="font-weight: bold;">${q.question}</td>
+                    <td>${correctAnswerText}</td>
+                    <td>
+                        <button class="edit-btn" onclick="editQuestion(${q.id})">Edit</button>
+                        <button class="delete-btn" onclick="deleteQuestion(${q.id})">Delete</button>
+                    </td>
+                `;
+                quizQuestionsTableBody.appendChild(row);
+            });
+        }
+        // --- END MODIFIED: Display Quiz Questions (Management View) ---
+        
+        // Student Registration
+        stuRegisterForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('reg-name').value;
+            const username = document.getElementById('reg-username').value;
+            const password = document.getElementById('reg-password').value;
+            // Check if username already exists
+            if (studentAccounts.find(acc => acc.username === username)) {
+                alert('Username already exists. Please choose another.');
+                return;
+            }
+            studentAccounts.push({ name, username, password });
+            localStorage.setItem('studentAccounts', JSON.stringify(studentAccounts));
+            alert('Registration successful! Please login.');
+            // Switch to login tab
+            loginTab.click();
+        });
+
+        // Student Login
+        stuLoginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = document.getElementById('stu-username').value;
+            const password = document.getElementById('stu-password').value;
+            const account = studentAccounts.find(acc => acc.username === username && acc.password === password);
+            if (account) {
+                currentStudent = account;
+                if (quizQuestions.length === 0) {
+                    alert('No questions available. Please contact admin.');
+                    return;
+                }
+                startQuiz();
+            } else {
+                alert('Invalid username or password.');
+            }
+        });
+
+        // Start Quiz
+        function startQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            selectedAnswer = null;
+            startTime = Date.now(); // Start timer
+            timerInterval = setInterval(updateTimer, 1000); // Update timer every second
+            showSection(quizSection);
+            displayQuestion();
+        }
+
+        // Display Question
+        function displayQuestion() {
+            if (currentQuestionIndex >= quizQuestions.length) {
+                endQuiz();
+                return;
+            }
+
+            const q = quizQuestions[currentQuestionIndex];
+            questionDisplay.innerHTML = `<h2>${q.question}</h2>`;
+            choicesDisplay.innerHTML = '';
+            
+            q.choices.forEach((choice, index) => {
+                const div = document.createElement('div');
+                div.className = 'choice';
+                div.textContent = choice;
+                div.addEventListener('click', () => selectAnswer(index));
+                choicesDisplay.appendChild(div);
+            });
+            
+            nextBtn.classList.add('hidden');
+            submitBtn.classList.add('hidden');
+            
+            if (currentQuestionIndex === quizQuestions.length - 1) {
+                submitBtn.classList.remove('hidden');
+            } else {
+                nextBtn.classList.remove('hidden');
+            }
+            if (selectedAnswer !== null) {
+                document.querySelectorAll('.choice')[selectedAnswer].classList.add('selected');
+            }
+        }
+
+        // Select Answer
+        function selectAnswer(index) {
+            selectedAnswer = index;
+            document.querySelectorAll('.choice').forEach((el, i) => {
+                el.classList.toggle('selected', i === index);
+            });
+        }
+
+        // Next Button
+        nextBtn.addEventListener('click', () => {
+            if (selectedAnswer !== null) {
+                if (selectedAnswer === quizQuestions[currentQuestionIndex].correct) {
+                    score++;
+                }
+                currentQuestionIndex++;
+                selectedAnswer = null;
+                displayQuestion();
+            } else {
+                alert('Please select an answer.');
+            }
+        });
+
+        // Submit Quiz
+        submitBtn.addEventListener('click', () => {
+            if (selectedAnswer !== null) {
+                if (selectedAnswer === quizQuestions[currentQuestionIndex].correct) {
+                    score++;
+                }
+                endQuiz(); // Stop timer and save results
+            } else {
+                alert('Please select an answer.');
+            }
+        });
+
+        // End Quiz
+        function endQuiz() {
+            clearInterval(timerInterval); // Stop the timer exactly when submitted
+            const endTime = Date.now();
+            const duration = Math.floor((endTime - startTime) / 1000);
+            const minutes = Math.floor(duration / 60);
+            const seconds = duration % 60;
+            const timeTaken = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            const name = currentStudent.name;
+            studentRecords.push({ name, score, timeTaken });
+            localStorage.setItem('studentRecords', JSON.stringify(studentRecords));
+            resultText.textContent = `Name: ${name}, Score: ${score}/${quizQuestions.length}, Duration: ${timeTaken}`;
+            showSection(resultSection);
+        }
+
+        // Update Timer
+        function updateTimer() {
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // Display Student Records
+        function displayStudentRecords() {
+            studentRecordsTable.innerHTML = '';
+            studentRecords.forEach(record => {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${record.name}</td><td>${record.score}</td><td>${record.timeTaken}</td>`;
+                studentRecordsTable.appendChild(row);
+            });
+        }
+
+        // Initialize to main menu
+        showSection(mainMenu);
+    </script>
+</body>
+</html>
